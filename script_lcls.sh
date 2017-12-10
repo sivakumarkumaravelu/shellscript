@@ -1,5 +1,5 @@
 #!/bin/sh
-#Script usage: sh script_logicallis.sh <input_file> <output_file>
+#Script usage: sh script_lcls.sh <input_file> <output_file>
 zcreate="zonecreate "
 quote='"'
 comma=','

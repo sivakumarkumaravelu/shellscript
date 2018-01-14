@@ -1,11 +1,12 @@
 #!/bin/sh
-#Script usage: sh script_lcls.sh <input_file> <output_file>
+#Script usage: sh script_logicallis.sh <input_file> <output_file>
 zcreate="zonecreate "
 quote='"'
 comma=','
 semicolon=';'
 isZone=false
-divisionlist=''
+outputstr=''
+divlist=''
 inputfile=$1
 outputfile=$2
 echo "Input file:"$inputfile
@@ -16,29 +17,33 @@ while IFS= read -r line; do
 zone=$(echo "$line" | awk 'match($3,/Z-+[A-Za-z0-9]+-+[^\s]+/) {print $3}')
 if [ ! -z "$zone" ]
 then
-isZone=true
-if [ "$isZone" = true ] 
+if [ ! -z "$outputstr" ]
 then
-#trim the last character
-divisionlist=${divisionlist%?}
-command=$zcreate$quote$zone$quote$comma$quote$divisionlist$quote
+outputstr=$outputstr$quote$divlist$quote
+echo $outputstr >> $outputfile
+outputstr=''
+divlist=''
 fi
+outputstr=$zcreate$quote$zone$quote$comma
 #check not empty, if no division then dont print
-if [ ! -z "$divisionlist" ]
-then
-echo $command >> $outputfile
-divisionlist=''
-fi
 else
-echo $line
 #The pattern here is start with [ then alpha numeric followed by a hyphen and apha-numeric
 #the 5th argument is matched hence using the same.
 division=$(echo "$line" | awk 'match($5,/\[([A-Za-z0-9]*-[a-zA-Z0-9]*)/) {print $5}')
 if [ ! -z "$division" ]
 then
-divisionlist=$divisionlist$division$semicolon
-isZone=false
+if [ ! -z "$divlist" ]
+then
+divlist=$divlist$semicolon$division
+else
+divlist=$division
+fi
 fi
 fi
 done <$inputfile
+if [ ! -z "$outputstr" ]
+then
+outputstr=$outputstr$quote$divlist$quote
+echo $outputstr >> $outputfile
+fi
 echo "File processed sucessfully!"
